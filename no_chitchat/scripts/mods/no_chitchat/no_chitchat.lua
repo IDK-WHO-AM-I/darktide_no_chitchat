@@ -1,69 +1,125 @@
 local mod = get_mod("no_chitchat")
 
+debug_override = false
+
 mod_settings = {
     debug_enabled = false,
     debug_event = 0,
 
-    hub_conversation = false,
-    hub_announcement = false,
+    mod_locale = 'en',
+
+    hub_radio = false,
+    hub_vox = false,
     hub_soldier = false,
+    hub_conversation = false,
 
-    vendor_hallowette_toggle = true,
-    vendor_siremelk_toggle = true,
-    vendor_peddler_toggle = true,
-    vendor_mv1_toggle = true,
-    vendor_krall_toggle = true,
-    vendor_hadron_toggle = true,
+    hub_hallowette = true,
+    hub_siremelk = true,
+    hub_mv1 = true,
+    hub_krall = true,
+    hub_peddler = true,
+    hub_hadron = true,
+    hub_sefoni = true,
 
-    mission_banter = false,
-    mission_briefing = false,
+    mission_brief = false,
     mission_info = false,
+    mission_conversation = false,
+    mission_lore = false,
 
-    callout_kill = false,
-    callout_horde = false,
-    callout_story = false,
-    callout_look = false,
-    callout_throw = false,
+    enemy_demonhost = true,
 
-    callout_wheel = false,
-    callout_reload = false
+    player_death = false,
+    player_ability = false,
+    player_kill = false,
+    player_headshot = false,
+    player_horde = false,
+    player_tag_item = flase,
+    player_tag_enemy = false,
+    player_look = false,
+    player_throw = false,
+    player_wheel = true,
 
 }
 
-rule_map = {
+toggles = {
 
-    hub_conversation = { '.*hub.*idle.*conversation.*', '.*radio_static.*' },
-    hub_announcement = { ".*hub.*rumors.*", ".*hub.*announcement.*", ".*vox_static.*" },
+    hub_radio = { '.*hub.*idle.*conversation.*', '.*radio_static.*' },
+    hub_vox = { ".*hub.*announcement.*", ".*vox_static.*" },
     hub_soldier = { ".*hub.*soldier.*", ".*soldier.*hub.*", ".*initiate.*greeting.*" },
+    hub_conversation = { ".*hub.*rumors.*", },
 
-    vendor_hallowette_toggle = { ".*purser.*interact.*", "purser.*goodbye.*" },
-    vendor_siremelk_toggle = { "hub_interact_contract_vendor.*", "contract_vendor.*" },
-    vendor_mv1_toggle = { "reject_npc.*" },
-    vendor_krall_toggle = { "barber_hello.*", ".*barber.*distance.*", "barber_goodbye.*" },
-    vendor_peddler_toggle = { "credit_store_servitor.*" },
-    vendor_hadron_toggle = { "hub_idle_crafting.*", "tech_priest.*" },
+    hub_hallowette = { ".*purser.*interact.*", ".*purser.*goodbye.*" },
+    hub_siremelk = { ".*hub_interact_contract_vendor.*", "contract_vendor.*" },
+    hub_mv1 = { ".*reject_npc.*" },
+    hub_krall = { ".*barber_hello.*", ".*barber.*distance.*", "barber_goodbye.*" },
+    hub_peddler = { ".*credit_store_servitor.*" },
+    hub_hadron = { ".*hub_idle_crafting.*", ".*tech_priest.*" },
+    hub_sefoni = { ".*training_ground_psyker.*hub_interact.*" },
 
-    mission_briefing = { "mission_.*_brief.*", "mission_.*_briefing.*", "mission_brief.*" },
-    mission_info = { "mission_info" },
-    mission_banter = { "start_banter", "generic_mission.*", 'npc_vo', ".*mission_cooling.*", ".*zone_tank_foundry.*" },
+    mission_brief = { "mission_.*_brief.*", "mission_.*_briefing.*", "mission_brief.*" },
+    mission_info = {
+        ".*mission_info.*",
+        ".*survive_almost_done.*",
+        ".*mission_armoury.*",
+        ".*mission_station_first.*",
+        ".*mission_station_station_approach.*",
+        ".*mission_armoury_amphitheatre.*",
+        ".*info_get_out.*",
+        ".*info_event.*",
+        ".*mission_cooling.*",
+        ".*mission.*propaganda.*"
+    },
+    mission_conversation = {
+        ".*start_banter.*",
+        ".*generic_mission.*",
+        '.*npc_vo.*',
+        ".*zone_tank_foundry.*",
+        ".*zone_transit.*",
+        ".*region_hubculum.*",
+        ".*region_mechanicus.*",
+        ".*zone_throneside.*",
+        ".*zone_watertown.*",
+        ".*story_talk.*",
+        ".*environmental_story.*",
+        ".*conversation.*",
+        ".*bonding_conversation.*",
+        ".*combat_pause.*"
+    },
+    mission_lore = {
+        ".*lore_the_warp.*",
+        ".*lore_zola.*",
+        ".*region_carnival.*",
+        ".*lore_melk_one.*",
+        ".*lore_era_indomitus.*",
+        ".*lore_valkyrie.*",
+        ".*lore_daemons.*",
+        ".*lore_rannrick.*",
+        ".*lore_brahms.*"
+    },
 
-    callout_kill = { "enemy_kill", "seen_killstreak.*" },
-    callout_horde = { "heard_horde", "heard_enemy.*" },
-    callout_story = { ".*story_talk", "environmental_story", ".*conversation.*", ".*bonding_conversation.*", ".*mission.*propaganda.*", ".*combat_pause.*", "info_event.*", ".*lore_daemons.*" },
-    callout_look = { "look_at", '.*tag_item', '.*tag_enemy', "tag_vo", 'seen_.*', "player_enemy_alert", ".*com_wheel_vo_location.*", ".*com_wheel_vo_enemy.*", '.*guidance.*' },
-    callout_throw = { "throwing_item", "throwing_grenade" },
+    enemy_demonhost = { ".*demonhost_.*mantra.*" },
 
-    callout_wheel = { "on_demand_com_wheel" }
+    player_death = { ".*player_death.*" },
+    player_ability = { ".*ability.*" },
+    player_kill = { ".*enemy_kill.*", ".*seen_killstreak.*" },
+    player_headshot = { ".*head_shot.*", },
+    player_horde = { ".*heard_horde.*", ".*heard_enemy.*" },
+    player_tag_item = { ".*tag_item.*", ".*smart_tag_vo_pickup_ammo.*", ".*smart_tag.*default.*" },
+    player_tag_enemy = { '.*tag_enemy.*', ".*player_enemy_alert.*", ".*on_demand_vo_tag_enemy.*", ".*smart_tag_vo_enemy.*", ".*smart_tag.*threat.*" },
+    player_look = { ".*stairs_sighted.*", ".*look_at.*", 'seen_.*', '.*guidance.*' },
+    player_throw = { ".*throwing_item.*", ".*throwing_grenade.*" },
+    player_wheel = { ".*on_demand_com_wheel.*", ".*com_wheel_vo_location.*", ".*com_wheel_vo_enemy.*" },
+
 }
 
 function echoDebug(event_id, format, ...)
-    if mod_settings['debug_enabled'] and mod_settings['debug_event'] == event_id then
+    if (mod_settings['debug_enabled'] and mod_settings['debug_event'] == event_id) or debug_override then
         mod:echo(format, ...);
     end
 end
 
 function isDisabled(rule)
-    for key, patterns in pairs(rule_map) do
+    for key, patterns in pairs(toggles) do
         for index, value in ipairs(patterns) do
             if string.find(rule, value) then
                 return not mod_settings[key]
@@ -84,6 +140,7 @@ mod.on_enabled = function()
 end
 
 unhooked = {
+    _play_tag_sound = true,
     play_event = true,
     play_local_vo_event = true,
     _play_mission_brief_vo = true,
@@ -91,17 +148,47 @@ unhooked = {
     _update_currently_playing_dialogues = true,
 }
 
+mod:hook_require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging", function(instance)
+
+    if unhooked._play_tag_sound then
+        unhooked._play_tag_sound = false
+        mod:hook_origin(instance, "_play_tag_sound", function(self, tag_instance, event_name)
+            local target_location = tag_instance:target_location()
+
+            if isDisabled(event_name) then
+                return
+            else
+                echoDebug(5, "[_play_tag_sound] %s", event_name)
+            end
+
+            if target_location then
+                self:_play_3d_sound(event_name, target_location)
+            else
+                local target_unit = tag_instance:target_unit()
+
+                if ALIVE[target_unit] then
+                    local unit_position = Unit.world_position(target_unit, 1)
+
+                    self:_play_3d_sound(event_name, unit_position)
+                else
+                    self:_play_sound(event_name)
+                end
+            end
+        end)
+    end
+
+end)
+
 mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", function(instance)
 
     if (unhooked.play_event) then
         unhooked.play_event = false
+
         mod:hook_origin(instance, "play_event", function(self, event)
             local type = event.type
 
-            echoDebug(0, "[play_event]: %s (%s)", event.sound_event, type)
-
-            if isDisabled(event.sound_event) then
-                echoDebug("Canceled: %s", event.sound_event)
+            if not isDisabled(event.sound_event) then
+                echoDebug(0, "[play_event]: %s (%s)", event.sound_event, type)
             end
 
             if type == "resource_event" then
@@ -165,10 +252,10 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
                 if #dialogue_system._dialog_sequence_events > 0 then
                     local trigger = dialogue_system._dialog_sequence_events[1].sound_event
 
-                    echoDebug(1, "[play_local_vo_event] %s", trigger)
-
                     if isDisabled(trigger) then
                         return
+                    else
+                        echoDebug(1, "[play_local_vo_event] %s", trigger)
                     end
                 end
 
@@ -232,13 +319,13 @@ mod:hook_require("scripts/ui/views/mission_intro_view/mission_intro_view", funct
             local events = mission_brief_vo.vo_events
             local voice_profile = nil
 
-            for i, v in ipairs(events) do
-                echoDebug(4, "_play_mission_brief_vo: %s", v)
-            end
-
             if isDisabled(events[1]) then
                 self.mission_briefing_done = true
                 return
+            else
+                for i, v in ipairs(events) do
+                    echoDebug(4, "_play_mission_brief_vo: %s", v)
+                end
             end
 
             if mission_giver_vo == "none" then
@@ -347,10 +434,10 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                         if #dialogue.dialogue_sequence > 0 then
                             local trigger = dialogue.dialogue_sequence[1].sound_event
 
-                            echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
-
                             if isDisabled(trigger) then
                                 return
+                            else
+                                echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
                             end
                         end
 
@@ -365,10 +452,10 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
 
                         local trigger = vo_event.sound_event
 
-                        echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
-
                         if isDisabled(trigger) then
                             return
+                        else
+                            echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
                         end
 
                         dialogue.currently_playing_event_id = extension:play_event(vo_event)
@@ -608,10 +695,10 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
 
                                             local trigger = sequence_table[1].sound_event
 
-                                            echoDebug(3, "[_update_currently_playing_dialogues]: %s", trigger)
-
                                             if isDisabled(trigger) then
                                                 return
+                                            else
+                                                echoDebug(3, "[_update_currently_playing_dialogues]: %s", trigger)
                                             end
 
                                             currently_playing_dialogue.currently_playing_event_id = extension:play_event(sequence_table[1])
