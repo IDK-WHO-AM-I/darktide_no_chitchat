@@ -84,6 +84,7 @@ toggles = {
         ".*mission_cooling.*",
         ".*mission.*propaganda.*",
         ".*info_hacking_decoding_.*",
+        ".*luggable_mission_pickup.*"
     },
     mission_conversation = {
         ".*start_banter.*",
