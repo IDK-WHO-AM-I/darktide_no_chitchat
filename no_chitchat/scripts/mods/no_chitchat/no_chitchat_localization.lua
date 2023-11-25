@@ -90,6 +90,15 @@ return {
         de = "Ausschalten/Einschalten der Voicelines deines Charakters"
     },
 
+    team_toggles = {
+        en = "Team characters",
+        de = "Mitspieler Charaktäre"
+    },
+    team_toggles_tooltip = {
+        en = "Turn off/on voicelines of your team characters",
+        de = "Ausschalten/Einschalten der Voicelines deine Mitspieler Charaktäre"
+    },
+
     hub_radio = {
         en = "Radio",
         de = "Radio"
@@ -134,6 +143,7 @@ return {
         en = "Psykhanium",
         de = "Psykhanium"
     },
+
     mission_brief = {
         en = "Briefing",
         de = "Einweisung"
@@ -150,10 +160,32 @@ return {
         en = "Lore",
         de = "Geschichte"
     },
+
     enemy_demonhost = {
         en = "Demonhost",
         de = "Dämonengeist"
     },
+    enemy_flamer = {
+        en = "Flamer",
+        de = "Flamer"
+    },
+    enemy_grenadier = {
+        en = "Bomber",
+        de = "Bomber"
+    },
+    enemy_gunner = {
+        en = "Gunner",
+        de = "Gunner"
+    },
+    enemy_berzerker = {
+        en = "Rager",
+        de = "Rager"
+    },
+    enemy_netgunner = {
+        en = "Trapper",
+        de = "Trapper"
+    },
+
     player_death = {
         en = "Death",
         de = "Tod"
@@ -195,117 +227,34 @@ return {
         de = "Kommunikationsrad"
     },
 
-    --[[
-        hub_toggles = {
-            en = "Mourningstar",
-            de = "Morgenstern"
-        },
-        hub_toggles_tooltip = {
-            en = "Turn On/Off the voice lines inside the hub",
-            de = "Schalte Voicelines in der Lobby an/aus"
-        },
+    team_advice = {
+        en = "Advice",
+        de = "Hinweis",
+    },
+    team_help = {
+        en = "Help",
+        de = "Hilfe",
+    },
+    team_warning = {
+        en = "Warning",
+        de = "Warnung",
+    },
+    team_hacking = {
+        en = "Hacking",
+        de = "Hacken",
+    },
+    team_revive = {
+        en = "Revive",
+        de = "Wiederbeleben",
+    },
+    team_downed = {
+        en = "Downed",
+        de = "Am Boden",
+    },
+    team_monster = {
+        en = "Monster",
+        de = "Monster",
+    },
 
-        hub_conversation = {
-            en = "Radio Conversations",
-            de = "Radio Unterhaltungen"
-        },
-        hub_announcement = {
-            en = "Vox Announcement",
-            de = "Vox Ansagen"
-        },
-        hub_soldier = {
-            en = "Soldier Comments",
-            de = "Soldaten Kommentar"
-        },
-        vendor_toggles = {
-            en = "Vendors",
-            de = "Händler"
-        },
-        vendor_toggles_tooltip = {
-            en = "Turn On/Off voice lines from vendors",
-            de = "Schalte Voicelines von Händlern an/aus"
-        },
-        vendor_hallowette_toggle = {
-            en = "The Commodore's Vestures",
-            de = "Gewänder der Kommodore"
-        },
-        vendor_siremelk_toggle = {
-            en = "Sire Melk's Requisitorium",
-            de = "Sire Melk's Requisitorium"
-        },
-        vendor_peddler_toggle = {
-            en = "Armoury Exchange",
-            de = "Waffenkammer"
-        },
-        vendor_mv1_toggle = {
-            en = "Commissary",
-            de = "Commisarium"
-        },
-        vendor_krall_toggle = {
-            en = "Barber-Chirurgeon",
-            de = "Barbier-Chirurg"
-        },
-        vendor_hadron_toggle = {
-            en = "Shrine of the Omnissiah",
-            de = "Schrein des Omnissiah"
-        },
-
-        mission_toggles = {
-            en = "Missions",
-            de = "Missionen"
-        },
-        mission_toggles_tooltip = {
-            en = "Turn On/Off voice lines during missions",
-            de = "Schalte Voicelines während Missionen an/aus"
-        },
-        mission_banter = {
-            en = "Banter",
-            de = "Geplänkel"
-        },
-        mission_briefing = {
-            en = "Briefing",
-            de = "Einweisung"
-        },
-        mission_info = {
-            en = "Info",
-            de = "Info"
-        },
-        mission_info_tooltip = {
-            en = "All the talk about what you need to do for the 400th time",
-            de = "Zum 400. Mal das ganze Gerede darüber was du tun sollst"
-        },
-
-        callout_toggles = {
-            en = "Callouts",
-            de = "Ausrufe"
-        },
-        callout_toggles_tooltip = {
-            en = "Turn On/Off callouts during missions",
-            de = "Schalte Ausrufe während Missionen an/aus"
-        },
-        callout_kill = {
-            en = "Enemy Kill",
-            de = "Feind Tod"
-        },
-        callout_horde = {
-            en = "Horde Incoming",
-            de = "Horde rückt an"
-        },
-        callout_story = {
-            en = "Story",
-            de = "Geschichten"
-        },
-        callout_look = {
-            en = "Look At / Tag",
-            de = "Anschauen / Markieren"
-        },
-        callout_look_tooltip = {
-            en = "Callouts when player looks at for example a button or tags something",
-            de = "Ausrufe wenn der Spieler einen Knopf anschaut oder etwas makiert"
-        },
-        callout_throw = {
-            en = "Throwing Grenade",
-            de = "Granate werfen"
-        },]]
 
 }

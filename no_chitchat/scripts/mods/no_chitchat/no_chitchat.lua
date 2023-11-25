@@ -27,18 +27,33 @@ mod_settings = {
     mission_lore = false,
 
     enemy_demonhost = true,
+    enemy_flamer = true,
+    enemy_grenadier = true,
+    enemy_gunner = true,
+    enemy_berzerker = true,
+    enemy_netgunner = true,
 
     player_death = false,
     player_ability = false,
     player_kill = false,
     player_headshot = false,
     player_horde = false,
-    player_tag_item = flase,
+    player_tag_item = false,
     player_tag_enemy = false,
     player_look = false,
     player_throw = false,
     player_wheel = true,
 
+    team_advice = true,
+    team_help = true,
+    team_warning = true,
+    team_hacking = true,
+    team_revive = true,
+    team_downed = true,
+    team_monster = true,
+    team_tag = true,
+
+    misc_medicae = true
 }
 
 toggles = {
@@ -47,9 +62,8 @@ toggles = {
     hub_vox = { ".*hub.*announcement.*", ".*vox_static.*" },
     hub_soldier = { ".*hub.*soldier.*", ".*soldier.*hub.*", ".*initiate.*greeting.*" },
     hub_conversation = { ".*hub.*rumors.*", },
-
     hub_hallowette = { ".*purser.*interact.*", ".*purser.*goodbye.*" },
-    hub_siremelk = { ".*hub_interact_contract_vendor.*", "contract_vendor.*" },
+    hub_siremelk = { ".*hub_interact_contract_vendor.*", ".*contract_vendor.*" },
     hub_mv1 = { ".*reject_npc.*" },
     hub_krall = { ".*barber_hello.*", ".*barber.*distance.*", "barber_goodbye.*" },
     hub_peddler = { ".*credit_store_servitor.*" },
@@ -63,11 +77,13 @@ toggles = {
         ".*mission_armoury.*",
         ".*mission_station_first.*",
         ".*mission_station_station_approach.*",
+        ".*mission_station_interrogation_bay.*",
         ".*mission_armoury_amphitheatre.*",
         ".*info_get_out.*",
         ".*info_event.*",
         ".*mission_cooling.*",
-        ".*mission.*propaganda.*"
+        ".*mission.*propaganda.*",
+        ".*info_hacking_decoding_.*",
     },
     mission_conversation = {
         ".*start_banter.*",
@@ -94,27 +110,68 @@ toggles = {
         ".*lore_valkyrie.*",
         ".*lore_daemons.*",
         ".*lore_rannrick.*",
-        ".*lore_brahms.*"
+        ".*lore_brahms.*",
+        ".*lore_xenos_.*",
+        ".*lore_hive_cities.*",
+        ".*lore_training_psyker.*",
+        ".*lore_inquisition.*",
+        ".*lore_imperium.*",
+        ".*lore_the_emperor.*",
+        ".*lore_servitors.*",
+        ".*lore_abhumans.*",
+        ".*lore_ecclesiarchy.*",
     },
 
-    enemy_demonhost = { ".*demonhost_.*mantra.*" },
+    enemy_demonhost = { "loc_enemy.*demonhost_.*", "loc_enemy.*demonhost_.*mantra.*" },
+    enemy_flamer = { "loc_enemy.*flamer_.*" },
+    enemy_grenadier = { "loc_enemy.*grenadier_.*" },
+    enemy_gunner = { "loc_enemy.*gunner_.*" },
+    enemy_berzerker = { "loc_enemy.*berzerker_.*" },
+    enemy_netgunner = { "loc_enemy.*netgunner_.*" },
 
     player_death = { ".*player_death.*" },
     player_ability = { ".*ability.*" },
-    player_kill = { ".*enemy_kill.*", ".*seen_killstreak.*" },
+    player_kill = { ".*enemy.*_kill.*", ".*seen_killstreak.*", ".*enemy_kill_scab_flamer.*", ".*enemy_kill_grenadier.*", ".*enemy_kill_netgunner.*" },
     player_headshot = { ".*head_shot.*", },
     player_horde = { ".*heard_horde.*", ".*heard_enemy.*" },
-    player_tag_item = { ".*tag_item.*", ".*smart_tag_vo_pickup_ammo.*", ".*smart_tag.*default.*" },
-    player_tag_enemy = { '.*tag_enemy.*', ".*player_enemy_alert.*", ".*on_demand_vo_tag_enemy.*", ".*smart_tag_vo_enemy.*", ".*smart_tag.*threat.*" },
-    player_look = { ".*stairs_sighted.*", ".*look_at.*", 'seen_.*', '.*guidance.*' },
+    player_tag_item = { ".*tag_item.*", ".*smart_tag_vo_pickup_ammo.*", ".*smart_tag.*default.*", ".*smart_tag_vo_small_grenade.*", ".*smart_tag_vo_pickup.*", ".*smart_tag_vo_station_health.*" },
+    player_tag_enemy = { '.*tag_enemy.*', ".*player_enemy_alert.*", ".*on_demand_vo_tag_enemy.*", ".*smart_tag_vo_enemy.*", ".*smart_tag.*threat.*", ".*smart_tag_vo_enemy_traitor_grenadier.*" },
+    player_look = { ".*found_ammo.*_low_on_ammo.*", ".*stairs_sighted.*", ".*look_at.*", '.*seen_.*', '.*guidance.*' },
     player_throw = { ".*throwing_item.*", ".*throwing_grenade.*" },
-    player_wheel = { ".*on_demand_com_wheel.*", ".*com_wheel_vo_location.*", ".*com_wheel_vo_enemy.*" },
+    player_wheel = { ".*on_demand_com_wheel.*", ".*com_wheel_vo_location.*", ".*com_wheel_vo_enemy.*", ".*com_wheel_vo_for_the_emperor.*", ".*com_wheel_vo_need_health.*", ".*com_wheel_vo_thank_you.*", ".*com_wheel_vo_need_ammo.*" },
+
+    team_advice = { ".*away_from.*", ".*come_back.*" },
+    team_help = { ".*cover_me.*", ".*response_for.*cover_me.*", ".*calling_for_help.*", ".*surrounded.*" },
+    team_warning = { ".*warning_exploding_barrel.*", ".*critical_health.*", ".*response_for_.*critical_health.*" },
+    team_hacking = { ".*response_to_hacking_fix_decode.*" },
+    team_revive = { ".*response_for_.*revive.*", ".*start_revive.*" },
+    team_downed = { ".*disabled_by_enemy.*", ".*need_rescue.*", ".*response_for.*disabled_by_chaos_hound.*", ".*disabled_by_chaos_hound.*", ".*knocked_down.*", ".*pinned_by_enemies.*", ".*response_for_pinned_by_enemies.*" },
+    team_monster = { ".*enemy_near_death_monster.*", ".*monster_fight_start_reaction.*" },
+
+    misc_medicae = { ".*medicae_servitor_.*", }
 
 }
 
-function echoDebug(event_id, format, ...)
+function echoDebug(event_id, event_name, format, ...)
+    if string.find(event_name, 'loc_enemy_.*') then
+        return
+    end
     if (mod_settings['debug_enabled'] and mod_settings['debug_event'] == event_id) or debug_override then
         mod:echo(format, ...);
+    end
+end
+
+function trueOrFalse(value)
+    return value == 'true'
+end
+
+function trueOrFalseOrValue(input)
+    if input == "true" then
+        return true
+    elseif input == "false" then
+        return false
+    else
+        return input
     end
 end
 
@@ -130,12 +187,16 @@ function isDisabled(rule)
 end
 
 mod.on_setting_changed = function(id)
-    mod_settings[id] = mod:get(id)
+    if mod:get(id) ~= nil then
+        mod_settings[id] = mod:get(id)
+    end
 end
 
 mod.on_enabled = function()
     for key, value in pairs(mod_settings) do
-        mod_settings[key] = mod:get(key)
+        if mod:get(key) ~= nil then
+            mod_settings[key] = mod:get(key)
+        end
     end
 end
 
@@ -148,6 +209,38 @@ unhooked = {
     _update_currently_playing_dialogues = true,
 }
 
+--[[mod:command("dtf", "Dump table to file", function(table_name)
+    mod:dtf(_G[table_name], table_name, 5)
+end)]]
+
+mod:command("setting", "Set / Print hidden mod settings", function(setting_id, value)
+    if mod_settings[setting_id] ~= nil then
+        if value == nil or #value == 0 then
+            mod:echo("Setting: %s, Value: ncc:%s|dmf:%s", setting_id, mod_settings[setting_id], mod:get(setting_id))
+        else
+            if mod:get(setting_id) == nil then
+                mod:echo("Updated hidden \"%s\" to %s", setting_id, value)
+                mod_settings[setting_id] = trueOrFalseOrValue(value);
+            else
+                mod:echo("Updated \"%s\" to %s", setting_id, value)
+                mod:set(setting_id, trueOrFalse(value))
+                mod_settings[setting_id] = trueOrFalse(value);
+            end
+        end
+    else
+        mod:echo("Command Error! Use /setting <setting_id> [value]")
+    end
+end)
+
+-- mod:command_remove("setting");
+
+
+--[[mod:hook_require("scripts/extension_systems/dialogue/dialogue_system_wwise", function(instance)
+    mod:hook_safe(instance, "trigger_vorbis_external_event", function(self, sound_event, sound_source, file_path, wwise_source_id)
+        mod:echo("Sound Event: %s,\r\n Sound Source: %s, \r\n File Path: %s, \r\n, Source ID: %s", sound_event, sound_source, file_path, wwise_source_id)
+    end)
+end)]]
+
 mod:hook_require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging", function(instance)
 
     if unhooked._play_tag_sound then
@@ -158,7 +251,7 @@ mod:hook_require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_taggin
             if isDisabled(event_name) then
                 return
             else
-                echoDebug(5, "[_play_tag_sound] %s", event_name)
+                echoDebug(5, event_name, "[_play_tag_sound] %s", event_name)
             end
 
             if target_location then
@@ -188,7 +281,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
             local type = event.type
 
             if not isDisabled(event.sound_event) then
-                echoDebug(0, "[play_event]: %s (%s)", event.sound_event, type)
+                echoDebug(0, event.sound_event, "[play_event]: %s (%s)", event.sound_event, type)
             end
 
             if type == "resource_event" then
@@ -209,7 +302,8 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
                 self:stop_currently_playing_vce_event()
                 self:_set_source_parameter("voice_fx_preset", self._voice_fx_preset, wwise_source_id)
 
-                return self._dialogue_system_wwise:trigger_vorbis_external_event(wwise_play_event, wwise_es, "wwise/externals/" .. sound_event, wwise_source_id)
+                local tmp = self._dialogue_system_wwise:trigger_vorbis_external_event(wwise_play_event, wwise_es, "wwise/externals/" .. sound_event, wwise_source_id);
+                return tmp;
             end
         end)
     end
@@ -255,7 +349,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
                     if isDisabled(trigger) then
                         return
                     else
-                        echoDebug(1, "[play_local_vo_event] %s", trigger)
+                        echoDebug(1, trigger, "[play_local_vo_event] %s", trigger)
                     end
                 end
 
@@ -324,7 +418,7 @@ mod:hook_require("scripts/ui/views/mission_intro_view/mission_intro_view", funct
                 return
             else
                 for i, v in ipairs(events) do
-                    echoDebug(4, "_play_mission_brief_vo: %s", v)
+                    echoDebug(4, v, "_play_mission_brief_vo: %s", v)
                 end
             end
 
@@ -437,7 +531,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                             if isDisabled(trigger) then
                                 return
                             else
-                                echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
+                                echoDebug(2, trigger, "[_play_dialogue_event_implementation] %s", trigger)
                             end
                         end
 
@@ -455,7 +549,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                         if isDisabled(trigger) then
                             return
                         else
-                            echoDebug(2, "[_play_dialogue_event_implementation] %s", trigger)
+                            echoDebug(2, trigger, "[_play_dialogue_event_implementation] %s", trigger)
                         end
 
                         dialogue.currently_playing_event_id = extension:play_event(vo_event)
@@ -688,6 +782,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                         table.remove(sequence_table, 1)
 
                                         if sequence_table[1] ~= nil and sequence_table[1].type == "vorbis_external" then
+
+                                            local trigger = sequence_table[1].sound_event
+
                                             self._dialogue_system_subtitle:add_playing_localized_dialogue(currently_playing_dialogue.speaker_name, currently_playing_dialogue)
                                         end
 
@@ -696,9 +793,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                             local trigger = sequence_table[1].sound_event
 
                                             if isDisabled(trigger) then
-                                                return
+                                                break
                                             else
-                                                echoDebug(3, "[_update_currently_playing_dialogues]: %s", trigger)
+                                                echoDebug(3, trigger, "[_update_currently_playing_dialogues]: %s", trigger)
                                             end
 
                                             currently_playing_dialogue.currently_playing_event_id = extension:play_event(sequence_table[1])

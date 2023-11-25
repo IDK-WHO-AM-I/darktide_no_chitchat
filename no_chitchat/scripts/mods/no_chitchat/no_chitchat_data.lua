@@ -5,7 +5,7 @@ return {
     description = mod:localize("mod_description"),
     is_togglable = true,
     allow_rehooking = true,
-    version = "0.2.0",
+    version = "0.3.0",
     options = {
         widgets = {
             {
@@ -43,6 +43,11 @@ return {
                 type = "group",
                 sub_widgets = {
                     { setting_id = "enemy_demonhost", type = "checkbox", default_value = true, },
+                    { setting_id = "enemy_flamer", type = "checkbox", default_value = true, },
+                    { setting_id = "enemy_grenadier", type = "checkbox", default_value = true, },
+                    { setting_id = "enemy_gunner", type = "checkbox", default_value = true, },
+                    { setting_id = "enemy_berzerker", type = "checkbox", default_value = true, },
+                    { setting_id = "enemy_netgunner", type = "checkbox", default_value = true, },
                 }
             },
             {
@@ -60,6 +65,20 @@ return {
                     { setting_id = "player_look", type = "checkbox", default_value = false, },
                     { setting_id = "player_throw", type = "checkbox", default_value = false, },
                     { setting_id = "player_wheel", type = "checkbox", default_value = false, },
+                }
+            },
+            {
+                setting_id = "team_toggles",
+                tooltip = "team_toggles_tooltip",
+                type = "group",
+                sub_widgets = {
+                    { setting_id = "team_advice", type = "checkbox", default_value = true, },
+                    { setting_id = "team_help", type = "checkbox", default_value = true, },
+                    { setting_id = "team_warning", type = "checkbox", default_value = true, },
+                    { setting_id = "team_hacking", type = "checkbox", default_value = true, },
+                    { setting_id = "team_revive", type = "checkbox", default_value = true, },
+                    { setting_id = "team_downed", type = "checkbox", default_value = true, },
+                    { setting_id = "team_monster", type = "checkbox", default_value = true, },
                 }
             },
             {
