@@ -279,32 +279,35 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
         unhooked.play_event = false
 
         mod:hook_origin(instance, "play_event", function(self, event)
-            local type = event.type
+            local event_type = event.type
 
             if not isDisabled(event.sound_event) then
-                echoDebug(0, event.sound_event, "[play_event]: %s (%s)", event.sound_event, type)
+                echoDebug(0, event.sound_event, "[play_event]: %s (%s)", event.sound_event, event_type)
             end
 
-            if type == "resource_event" then
+            if event_type == "resource_event" then
                 local sound_event = event.sound_event
                 local wwise_source_id = self._wwise_source_id or self._dialogue_system_wwise:make_unit_auto_source(self._play_unit, self._voice_node)
 
-                WwiseWorld.set_switch(self._wwise_world, self._wwise_voice_switch_group, self._wwise_voice_switch_value, self._wwise_source_id)
+                WwiseWorld.set_switch(self._wwise_world, self._wwise_voice_switch_group, self._wwise_voice_switch_value, wwise_source_id)
 
                 return self._dialogue_system_wwise:trigger_resource_event("wwise/events/vo/" .. sound_event, wwise_source_id)
-            elseif type == "vorbis_external" then
+            elseif event_type == "vorbis_external" then
                 local wwise_route = event.wwise_route
                 local sound_event = event.sound_event
                 local wwise_source_id = self._wwise_source_id or self._dialogue_system_wwise:make_unit_auto_source(self._play_unit, self._voice_node)
                 local selected_wwise_route = self:get_selected_wwise_route(wwise_route, wwise_source_id)
                 local wwise_play_event = selected_wwise_route.wwise_event_path
                 local wwise_es = selected_wwise_route.wwise_sound_source
+                local stop_vce_event = self._stop_vce_event
 
-                self:stop_currently_playing_vce_event()
+                if stop_vce_event and self._wwise_source_id then
+                    self._dialogue_system_wwise:trigger_resource_event(stop_vce_event, self._wwise_source_id)
+                end
+
                 self:_set_source_parameter("voice_fx_preset", self._voice_fx_preset, wwise_source_id)
 
-                local tmp = self._dialogue_system_wwise:trigger_vorbis_external_event(wwise_play_event, wwise_es, "wwise/externals/" .. sound_event, wwise_source_id);
-                return tmp;
+                return self._dialogue_system_wwise:trigger_vorbis_external_event(wwise_play_event, wwise_es, "wwise/externals/" .. sound_event, wwise_source_id)
             end
         end)
     end
@@ -312,15 +315,13 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
     if (unhooked.play_local_vo_event) then
         unhooked.play_local_vo_event = false
 
-        local DialogueCategoryConfig = require("scripts/settings/dialogue/dialogue_category_config")
         local DialogueQueries = require("scripts/extension_systems/dialogue/dialogue_queries")
         local WwiseRouting = require("scripts/settings/dialogue/wwise_vo_routing_settings")
 
-        mod:hook_origin(instance, "play_local_vo_event", function(self, rule_name, wwise_route_key, on_play_callback, seed)
-            local dialogue_system = self._dialogue_system
+        mod:hook_origin(instance, "play_local_vo_event", function(self, rule_name, wwise_route_key, on_play_callback, seed, optional_keep_talking)
             local rule = self._vo_choice[rule_name]
 
-            if not rule then
+            if not rule or self._is_currently_playing_dialogue then
                 return
             end
 
@@ -334,58 +335,59 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_extension", functi
             end
 
             local sound_event, subtitles_event, sound_event_duration = self:get_dialogue_event(rule_name, dialogue_index)
-            local currently_playing_dialogue = self:get_currently_playing_dialogue()
-            local wwise_playing = currently_playing_dialogue and self._dialogue_system_wwise:is_playing(currently_playing_dialogue.currently_playing_event_id)
 
-            if sound_event and not wwise_playing then
-                local pre_wwise_event, post_wwise_event = nil
-                local dialogue = {}
-                local wwise_route = WwiseRouting[wwise_route_key]
+            if not sound_event then
+                return
+            end
 
-                dialogue_system._dialog_sequence_events = dialogue_system:_create_sequence_events_table(pre_wwise_event, wwise_route, sound_event, post_wwise_event)
+            self._last_query_sound_event = sound_event
+            local pre_wwise_event, post_wwise_event = nil
+            local dialogue_system = self._dialogue_system
+            local wwise_route = WwiseRouting[wwise_route_key]
+            local dialog_sequence_events = dialogue_system:_create_sequence_events_table(pre_wwise_event, wwise_route, sound_event, post_wwise_event)
 
-                if #dialogue_system._dialog_sequence_events > 0 then
-                    local trigger = dialogue_system._dialog_sequence_events[1].sound_event
+            if #dialog_sequence_events > 0 then
+                local trigger = dialog_sequence_events[1].sound_event
 
-                    if isDisabled(trigger) then
-                        return
-                    else
-                        echoDebug(1, trigger, "[play_local_vo_event] %s", trigger)
-                    end
+                if isDisabled(trigger) then
+                    return
+                else
+                    echoDebug(1, trigger, "[play_local_vo_event] %s", trigger)
                 end
+            end
 
-                self:set_last_query_sound_event(sound_event)
+            local event_id = self:play_event(dialog_sequence_events[1])
+            local unit = self._unit
+            local speaker_name = self:get_context().voice_template
+            local dialogue = self:request_empty_dialogue_table()
+            dialogue.currently_playing_event_id = event_id
+            dialogue.currently_playing_unit = unit
+            dialogue.speaker_name = speaker_name
+            dialogue.dialogue_timer = sound_event_duration
+            dialogue.currently_playing_subtitle = subtitles_event
+            dialogue.wwise_route = wwise_route_key
+            dialogue.is_audible = true
+            dialogue.dialogue_sequence = dialog_sequence_events
+            dialogue_system._playing_units[unit] = self
 
-                dialogue.currently_playing_event_id = self:play_event(dialogue_system._dialog_sequence_events[1])
-                local speaker_name = self:get_context().voice_template
-                local unit = self._unit
-                dialogue_system._playing_units[unit] = self
-                dialogue.currently_playing_unit = unit
-                dialogue.speaker_name = speaker_name
-                dialogue.dialogue_timer = sound_event_duration
-                dialogue.currently_playing_subtitle = subtitles_event
-                dialogue.wwise_route = wwise_route_key
-                dialogue.is_audible = true
-                local dialogue_category = dialogue.category
-                local category_setting = DialogueCategoryConfig[dialogue_category]
-                dialogue_system._playing_dialogues[dialogue] = category_setting
+            table.insert(dialogue_system._playing_dialogues_array, 1, dialogue)
 
-                self:set_currently_playing_dialogue(dialogue)
-                table.insert(dialogue_system._playing_dialogues_array, 1, dialogue)
+            self._is_currently_playing_dialogue = true
 
+            if not optional_keep_talking then
                 local animation_event = "start_talking"
 
                 dialogue_system:_trigger_face_animation_event(unit, animation_event)
+            end
 
-                local dialogue_system_subtitle = dialogue_system:dialogue_system_subtitle()
+            local dialogue_system_subtitle = dialogue_system:dialogue_system_subtitle()
 
-                dialogue_system_subtitle:add_playing_localized_dialogue(speaker_name, dialogue)
+            dialogue_system_subtitle:add_playing_localized_dialogue(speaker_name, dialogue)
 
-                if on_play_callback then
-                    local id = dialogue.currently_playing_event_id
+            if on_play_callback then
+                local id = dialogue.currently_playing_event_id
 
-                    on_play_callback(id, rule_name)
-                end
+                on_play_callback(id, rule_name)
             end
         end)
     end
@@ -454,25 +456,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
         local DialogueBreedSettings = require("scripts/settings/dialogue/dialogue_breed_settings")
         local DialogueCategoryConfig = require("scripts/settings/dialogue/dialogue_category_config")
 
-        mod:hook_origin(instance, "_play_dialogue_event_implementation", function(self, go_id, is_level_unit, level_name_hash, dialogue_id, dialogue_index, dialogue_rule_index)
+        mod:hook_origin(instance, "_play_dialogue_event_implementation", function (self, go_id, is_level_unit, level_name_hash, dialogue_id, dialogue_index, dialogue_rule_index, optional_query)
             local dialogue_actor_unit = Managers.state.unit_spawner:unit(go_id, is_level_unit, level_name_hash)
-
-            if not dialogue_actor_unit then
-                return
-            end
-
-            local dialogue_name = NetworkLookup.dialogues[dialogue_id]
-            local dialogue = self._dialogues[dialogue_name]
-
-            if not self:_is_playable_dialogue_category(dialogue) then
-                return
-            end
-
-            if self:_prevent_on_demand_vo(dialogue_actor_unit, dialogue) then
-                return
-            end
-
-            local extension = self._unit_extension_data[dialogue_actor_unit]
+            local extension = self._unit_to_extension_map[dialogue_actor_unit]
 
             if not extension then
                 return
@@ -484,18 +470,22 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                 return
             end
 
-            local playing_dialogue_to_discard = extension:get_currently_playing_dialogue()
+            local dialogue_name = NetworkLookup.dialogue_names[dialogue_id]
+            local dialogue_template = self._dialogue_templates[dialogue_name]
+            local dialogue_category = dialogue_template.category
 
-            if playing_dialogue_to_discard then
-                local animation_event = "stop_talking"
+            if not self:_is_playable_dialogue_category(dialogue_category) then
+                return
+            end
 
-                self:_trigger_face_animation_event(dialogue_actor_unit, animation_event)
-                extension:stop_currently_playing_wwise_event(playing_dialogue_to_discard.concurrent_wwise_event_id)
-                self._dialogue_system_wwise:stop_if_playing(playing_dialogue_to_discard.currently_playing_event_id)
-                extension:set_currently_playing_dialogue(nil)
-                self:_remove_stopped_dialogue(playing_dialogue_to_discard)
+            if self:_prevent_on_demand_vo(dialogue_actor_unit, dialogue_category) then
+                return
+            end
 
-                self._playing_units[dialogue_actor_unit] = nil
+            local is_currently_playing_dialogue = extension:is_currently_playing_dialogue()
+
+            if is_currently_playing_dialogue then
+                extension:stop_currently_playing_vo()
             end
 
             local sound_event, subtitles_event, sound_event_duration = extension:get_dialogue_event(dialogue_name, dialogue_index)
@@ -506,18 +496,23 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                 extension:set_last_query_sound_event(sound_event)
             end
 
+            local dialogue = extension:request_empty_dialogue_table()
+
+            table.merge(dialogue, dialogue_template)
+
             local speaker_name = extension:get_context().voice_template
             dialogue.speaker_name = speaker_name
+            local wwise_route_key = dialogue.wwise_route
 
-            if speaker_name == "tech_priest_a" and dialogue.wwise_route == 1 then
-                dialogue.wwise_route = 21
+            if speaker_name == "tech_priest_a" and wwise_route_key == 1 then
+                wwise_route_key = 21
             end
 
             if not DEDICATED_SERVER then
                 local wwise_route = self._wwise_route_default
 
-                if dialogue.wwise_route ~= nil then
-                    wwise_route = self._wwise_routes[dialogue.wwise_route]
+                if wwise_route_key ~= nil then
+                    wwise_route = self._wwise_routes[wwise_route_key]
                 end
 
                 if sound_event then
@@ -589,12 +584,12 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
             dialogue.currently_playing_unit = dialogue_actor_unit
             dialogue.dialogue_timer = sound_event_duration
             dialogue.currently_playing_subtitle = subtitles_event
+            dialogue.used_query = optional_query
 
-            extension:set_currently_playing_dialogue(dialogue)
+            extension:set_is_currently_playing_dialogue(true)
 
-            local dialogue_category = dialogue.category
-            local category_setting = DialogueCategoryConfig[dialogue_category]
-            self._playing_dialogues[dialogue] = category_setting
+            local category_config = DialogueCategoryConfig[dialogue_category]
+            self._playing_dialogues[dialogue] = category_config
 
             table.insert(self._playing_dialogues_array, 1, dialogue)
 
@@ -602,10 +597,6 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
 
             if sequence_table ~= nil and sequence_table[1].type == "vorbis_external" or not is_sequence then
                 self._dialogue_system_subtitle:add_playing_localized_dialogue(speaker_name, dialogue)
-            end
-
-            if rule then
-                dialogue.wwise_route = rule.wwise_route
             end
         end)
     end
@@ -615,40 +606,40 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
 
         local DialogueBreedSettings = require("scripts/settings/dialogue/dialogue_breed_settings")
 
-        mod:hook_origin(instance, "_update_currently_playing_dialogues", function(self, t, dt)
+        mod:hook_origin(instance, "_update_currently_playing_dialogues", function(self, dt, t)
             local ALIVE = ALIVE
+            local unit_to_extension_map = self._unit_to_extension_map
+            local playing_units = self._playing_units
+            local is_server = self._is_server
+            local dialogue_system_wwise = self._dialogue_system_wwise
 
-            for unit, extension in pairs(self._playing_units) do
+            for unit, extension in pairs(playing_units) do
                 repeat
                     if not ALIVE[unit] then
-                        self._playing_units[unit] = nil
+                        playing_units[unit] = nil
                     else
                         local currently_playing_dialogue = extension:get_currently_playing_dialogue()
                         local is_currently_playing = nil
+                        local dialogue_timer = currently_playing_dialogue.dialogue_timer
 
-                        if currently_playing_dialogue.dialogue_timer then
-                            is_currently_playing = currently_playing_dialogue.dialogue_timer - dt > 0
+                        if dialogue_timer then
+                            is_currently_playing = dialogue_timer - dt > 0
                         end
 
                         if not is_currently_playing then
                             local animation_event = "stop_talking"
 
                             self:_trigger_face_animation_event(unit, animation_event)
-                            extension:stop_currently_playing_wwise_event(currently_playing_dialogue.concurrent_wwise_event_id)
-                            self._dialogue_system_wwise:stop_if_playing(currently_playing_dialogue.currently_playing_event_id)
+                            dialogue_system_wwise:stop_if_playing(currently_playing_dialogue.concurrent_wwise_event_id)
 
                             local used_query = currently_playing_dialogue.used_query
 
-                            extension:set_currently_playing_dialogue(nil)
-                            self:_remove_stopped_dialogue(currently_playing_dialogue)
+                            extension:set_is_currently_playing_dialogue(false)
+                            self:_remove_stopped_dialogue(unit, currently_playing_dialogue)
 
-                            self._playing_units[unit] = nil
-
-                            if not self._is_server then
+                            if not is_server then
                                 break
                             end
-
-                            extension:set_dialogue_timer(nil)
 
                             local result = used_query ~= nil and used_query.result
 
@@ -658,7 +649,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                 local on_done = success_rule.on_done
 
                                 if on_done then
-                                    local user_contexts = self._unit_extension_data[source]
+                                    local user_contexts = unit_to_extension_map[source]
 
                                     for i = 1, #on_done do
                                         local on_done_command = on_done[i]
@@ -682,18 +673,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                     self._reject_queries_until = t + reject_events_command.duration
                                 end
 
-                                local speaker_name = "UNKNOWN"
-                                local breed_data = Unit.get_data(source, "breed")
-
-                                if breed_data and not breed_data.is_player then
-                                    speaker_name = breed_data.name
-                                elseif ScriptUnit.has_extension(source, "dialogue_system") then
-                                    speaker_name = extension:vo_class_name()
-                                end
-
                                 local temp_event_data = {
                                     dialogue_name = result,
-                                    speaker_class = speaker_name,
+                                    speaker_class = extension:vo_class_name(),
                                     sound_event = extension:get_last_query_sound_event(),
                                     voice_profile = extension:get_voice_profile()
                                 }
@@ -705,13 +687,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                         if heard_speak_target == "players" then
                                             self:append_faction_event(unit, "heard_speak", temp_event_data, nil, "imperium", true)
                                         elseif heard_speak_target == "all" then
-                                            for registered_unit, registered_extension in pairs(self._unit_extension_data) do
+                                            for registered_unit, registered_extension in pairs(unit_to_extension_map) do
                                                 repeat
-                                                    if registered_unit == unit then
-                                                        break
-                                                    end
-
-                                                    if registered_extension:is_dialogue_disabled() then
+                                                    if registered_unit == unit or registered_extension:is_dialogue_disabled() then
                                                         break
                                                     end
 
@@ -730,7 +708,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                             local voice_over_spawn_manager = Managers.state.voice_over_spawn
                                             local default_mission_giver_voice_profile = voice_over_spawn_manager:current_voice_profile()
                                             local default_mission_giver_unit = voice_over_spawn_manager:voice_over_unit(default_mission_giver_voice_profile)
-                                            local default_mission_giver_dialogue_extension = ScriptUnit.has_extension(default_mission_giver_unit, "dialogue_system")
+                                            local default_mission_giver_dialogue_extension = unit_to_extension_map[default_mission_giver_unit]
                                             local default_mission_giver_class = default_mission_giver_dialogue_extension._context.class_name
                                             local breed_setting = DialogueBreedSettings[default_mission_giver_class]
                                             local voices = breed_setting.wwise_voices
@@ -772,9 +750,9 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
 
                                 extension:set_last_query_sound_event(nil)
                             end
-                        elseif currently_playing_dialogue.dialogue_timer then
+                        elseif dialogue_timer then
                             if not DEDICATED_SERVER then
-                                local playing = self._dialogue_system_wwise:is_playing(currently_playing_dialogue.currently_playing_event_id)
+                                local playing = dialogue_system_wwise:is_playing(currently_playing_dialogue.currently_playing_event_id)
 
                                 if not playing then
                                     local sequence_table = currently_playing_dialogue.dialogue_sequence
@@ -782,14 +760,12 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                     if sequence_table then
                                         table.remove(sequence_table, 1)
 
-                                        if sequence_table[1] ~= nil and sequence_table[1].type == "vorbis_external" then
-
-                                            local trigger = sequence_table[1].sound_event
-
-                                            self._dialogue_system_subtitle:add_playing_localized_dialogue(currently_playing_dialogue.speaker_name, currently_playing_dialogue)
-                                        end
-
                                         if table.size(sequence_table) > 0 then
+                                            local next_event = sequence_table[1]
+
+                                            if next_event.type == "vorbis_external" then
+                                                self._dialogue_system_subtitle:add_playing_localized_dialogue(currently_playing_dialogue.speaker_name, currently_playing_dialogue)
+                                            end
 
                                             local trigger = sequence_table[1].sound_event
 
@@ -799,7 +775,7 @@ mod:hook_require("scripts/extension_systems/dialogue/dialogue_system", function(
                                                 echoDebug(3, trigger, "[_update_currently_playing_dialogues]: %s", trigger)
                                             end
 
-                                            currently_playing_dialogue.currently_playing_event_id = extension:play_event(sequence_table[1])
+                                            currently_playing_dialogue.currently_playing_event_id = extension:play_event(next_event)
                                         end
                                     end
                                 end
